@@ -161,7 +161,7 @@ class HBNBCommand(cmd.Cmd):
                     print(f"Invalid float value: {value}. Skipping.")
                     continue
             else:
-                ""Integer parameter"""
+                """Integer parameter"""
                 try:
                     value = int(value)
                 except ValueError:
