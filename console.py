@@ -4,6 +4,8 @@ import cmd
 import sys
 from models.base_model import BaseModel
 from models.__init__ import storage
+from datetime import datetime
+import uuid
 from models.user import User
 from models.place import Place
 from models.state import State
@@ -114,7 +116,7 @@ class HBNBCommand(cmd.Cmd):
         pass
 
     def do_create(self, args):
-        """ Create an object of any class"""
+        """ Create an object of any class
         if not args:
             print("** class name missing **")
             return
@@ -122,6 +124,58 @@ class HBNBCommand(cmd.Cmd):
             print("** class doesn't exist **")
             return
         new_instance = HBNBCommand.classes[args]()
+        storage.save()
+        print(new_instance.id)
+        storage.save()"""
+
+        """Create an object of any class with given parameters"""
+        if not args:
+            print("** class name missing **")
+            return
+
+        args_list = args.split()
+        class_name = args_list[0]
+        args_list = args_list[1:]
+
+        if class_name not in HBNBCommand.classes:
+            print("** class doesn't exist **")
+            return
+
+        """Parse parameters and create a dictionary"""
+        params = {}
+        for param in args_list:
+            key_val = param.split('=')
+            if len(key_val) != 2:
+                print(f"Invalid parameter: {param}. Skipping.")
+                continue
+
+            key, value = key_val
+            if value.startswith('"') and value.endswith('"'):
+                """String parameter, replace underscores with spaces"""
+                value = value[1:-1].replace('_', ' ').replace('\\"', '"')
+            elif '.' in value:
+                #Float parameter
+                try:
+                    value = float(value)
+                except ValueError:
+                    print(f"Invalid float value: {value}. Skipping.")
+                    continue
+            else:
+                ""Integer parameter"""
+                try:
+                    value = int(value)
+                except ValueError:
+                    print(f"Invalid integer value: {value}. Skipping.")
+                    continue
+
+            params[key] = value
+
+        current_time = datetime.now().isoformat()
+        params.setdefault('created_at', current_time)
+        params.setdefault('updated_at', current_time)
+
+        """Create an instance of the specified class with the parsed parameters"""
+        new_instance = HBNBCommand.classes[class_name](**params)
         storage.save()
         print(new_instance.id)
         storage.save()
