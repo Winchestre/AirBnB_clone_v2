@@ -170,10 +170,6 @@ class HBNBCommand(cmd.Cmd):
 
             params[key] = value
 
-        current_time = datetime.now().isoformat()
-        params.setdefault('created_at', current_time)
-        params.setdefault('updated_at', current_time)
-
         """Create an instance of the specified class with the parsed parameters"""
         new_instance = HBNBCommand.classes[class_name](**params)
         storage.save()
