@@ -154,7 +154,7 @@ class HBNBCommand(cmd.Cmd):
                 """String parameter, replace underscores with spaces"""
                 value = value[1:-1].replace('_', ' ').replace('\\"', '"')
             elif '.' in value:
-                #Float parameter
+                # Float parameter
                 try:
                     value = float(value)
                 except ValueError:
@@ -170,7 +170,9 @@ class HBNBCommand(cmd.Cmd):
 
             params[key] = value
 
-        """Create an instance of the specified class with the parsed parameters"""
+        """Create an instance of the specified class with the parsed
+        parameters
+        """
         new_instance = HBNBCommand.classes[class_name](**params)
         storage.save()
         print(new_instance.id)
