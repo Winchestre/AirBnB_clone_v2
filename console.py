@@ -4,8 +4,6 @@ import cmd
 import sys
 from models.base_model import BaseModel
 from models.__init__ import storage
-from datetime import datetime
-import uuid
 from models.user import User
 from models.place import Place
 from models.state import State
@@ -116,18 +114,6 @@ class HBNBCommand(cmd.Cmd):
         pass
 
     def do_create(self, args):
-        """ Create an object of any class
-        if not args:
-            print("** class name missing **")
-            return
-        elif args not in HBNBCommand.classes:
-            print("** class doesn't exist **")
-            return
-        new_instance = HBNBCommand.classes[args]()
-        storage.save()
-        print(new_instance.id)
-        storage.save()"""
-
         """Create an object of any class with given parameters"""
         if not args:
             print("** class name missing **")
@@ -135,48 +121,29 @@ class HBNBCommand(cmd.Cmd):
 
         args_list = args.split()
         class_name = args_list[0]
-        args_list = args_list[1:]
-
         if class_name not in HBNBCommand.classes:
             print("** class doesn't exist **")
             return
-
-        """Parse parameters and create a dictionary"""
-        params = {}
-        for param in args_list:
-            key_val = param.split('=')
-            if len(key_val) != 2:
-                print(f"Invalid parameter: {param}. Skipping.")
-                continue
-
-            key, value = key_val
-            if value.startswith('"') and value.endswith('"'):
-                """String parameter, replace underscores with spaces"""
-                value = value[1:-1].replace('_', ' ').replace('\\"', '"')
-            elif '.' in value:
-                # Float parameter
-                try:
-                    value = float(value)
-                except ValueError:
-                    print(f"Invalid float value: {value}. Skipping.")
-                    continue
-            else:
-                """Integer parameter"""
-                try:
-                    value = int(value)
-                except ValueError:
-                    print(f"Invalid integer value: {value}. Skipping.")
-                    continue
-
-            params[key] = value
-
-        """Create an instance of the specified class with the parsed
-        parameters
-        """
-        new_instance = HBNBCommand.classes[class_name](**params)
-        storage.save()
-        print(new_instance.id)
-        storage.save()
+        try:
+            new_instance = HBNBCommand.classes[class_name]()
+            for i in range(1, len(args_list)):
+                param = args_list[i].partition('=')
+                key = param[0]
+                val = param[2]
+                if val:
+                    if len(val) > 2 and val[0] == '\"' and val[-1] == '\"':
+                        val = val[1:-1].replace('-', ' ')
+                        setattr(new_instance, key, val)
+                    else:
+                        try:
+                            val = float(val) if '.' in val else int(val)
+                            setattr(new_instance, key, val)
+                        except ValueError:
+                            continue
+            new_instance.save()
+            print(new_instance.id)
+        except Exception as e:
+            print(e)
 
     def help_create(self):
         """ Help information for the create method """
@@ -205,7 +172,7 @@ class HBNBCommand(cmd.Cmd):
             print("** instance id missing **")
             return
 
-        key = c_name + "." + c_id
+        key = f'{c_name}.{c_id}'
         try:
             print(storage._FileStorage__objects[key])
         except KeyError:
@@ -236,7 +203,7 @@ class HBNBCommand(cmd.Cmd):
             print("** instance id missing **")
             return
 
-        key = c_name + "." + c_id
+        key = f'{c_name}.{c_id}'
 
         try:
             del (storage.all()[key])
@@ -258,12 +225,12 @@ class HBNBCommand(cmd.Cmd):
             if args not in HBNBCommand.classes:
                 print("** class doesn't exist **")
                 return
-            for k, v in storage._FileStorage__objects.items():
-                if k.split('.')[0] == args:
-                    print_list.append(str(v))
+            cls = HBNBCommand.classes[args]
+            for key, value in storage.all(cls).items():
+                print_list.append(str(value))
         else:
-            for k, v in storage._FileStorage__objects.items():
-                print_list.append(str(v))
+            for key, value in storage.all().items():
+                print_list.append(str(value))
 
         print(print_list)
 
@@ -275,8 +242,8 @@ class HBNBCommand(cmd.Cmd):
     def do_count(self, args):
         """Count current number of class instances"""
         count = 0
-        for k, v in storage._FileStorage__objects.items():
-            if args == k.split('.')[0]:
+        for key, value in storage._FileStorage__objects.items():
+            if args == key.split('.')[0]:
                 count += 1
         print(count)
 
@@ -308,7 +275,7 @@ class HBNBCommand(cmd.Cmd):
             return
 
         # generate key from class and id
-        key = c_name + "." + c_id
+        key = f'{c_name}.{c_id}'
 
         # determine if key is present
         if key not in storage.all():
