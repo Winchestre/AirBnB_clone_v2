@@ -1,20 +1,18 @@
 #!/usr/bin/python3
 """This module defines a base class for all models in our hbnb clone"""
 import uuid
+import models
 from datetime import datetime
-from sqlalchemy import Column, String, DateTime
-from sqlalchemy.orm import declarative_base
+from sqlalchemy import Column, String, Integer, DateTime
+from sqlalchemy.ext.declarative import declarative_base
 
 Base = declarative_base()
 
 
 class BaseModel:
     """A base class for all hbnb models"""
-
-    id = Column(String(60), primary_key = True)
-
+    id = Column(String(60), unique=True, nullable=False, primary_key=True)
     created_at = Column(DateTime, default=datetime.utcnow(), nullable=False)
-
     updated_at = Column(DateTime, default=datetime.utcnow(), nullable=False)
 
     def __init__(self, *args, **kwargs):
@@ -29,31 +27,43 @@ class BaseModel:
                     value =datetime.strptime(value, format)
                 if key != '__class__':
                     setattr(self, key, value)
+            if "id" not in kwargs:
+                self.id = str(uuid.uuid4())
+            if "created_at" not in kwargs:
+                self.created_at = datetime.now()
+            if "updated_at" not in kwargs:
+                self.updated_at = datetime.now()
 
     def __str__(self):
         """Returns a string representation of the instance"""
-        cls = (str(type(self)).split('.')[-1]).split('\'')[0]
-        return f'[{cls}] ({self.id}) {self.__dict__}'
+        return f'[{type(self).__name__}] ({self.id}) {self.__dict__}'
+
+    def __repr__(self):
+        """Return a string representation
+        """
+        return self.__str__()
 
     def save(self):
         """Updates updated_at with current time when instance is changed"""
-        from models import storage
         self.updated_at = datetime.now()
-        storage.new(self)
-        storage.save()
+        models.storage.new(self)
+        models.storage.save()
 
     def to_dict(self):
         """Convert instance into dict format"""
-        dictionary = self.__dict__.copy()
-        dictionary['__class__'] = self.__class__.__name__
-        for key, value in dictionary.items():
+        my_dict = dict(self.__dict__)
+        my_dict['__class__'] = str(type(self).__name__)
+        my_dict["created_at"] = self.created_at.isoformat()
+        my_dict["updated_at"] = self.updated_at.isoformat()
+        """for key, value in dictionary.items():
             if isinstance(vlaue, datetime):
                 dictionary[key] = datetime.isoformat(value)
-        if '_sa_instance_state' in dictionary:
-            del dictionary['_sa_instance_state']
-        return dictionary
+        """
+        if '_sa_instance_state' in my_dict.keys():
+            del my_dict['_sa_instance_state']
+        return my_dict
 
     def delete(self):
-        """Delete the current instance from the storage"""
-        from models import storage
-        storage.delete(self)
+        """Delete the current instance from the storage
+        """
+        models.storage.delete(self)

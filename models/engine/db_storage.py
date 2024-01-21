@@ -9,6 +9,7 @@ from models.review import Review
 from models.base_model import Base
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, scoped_session
+from sqlalchemy.ext.declarative import declarative_base
 from os import getenv
 
 
@@ -35,18 +36,19 @@ class DBStorage:
         all objects depending on the class name
         """
         all_cls_dict = {}
-
-        if cls is not None:
-            result = self.__session.query(cls).all()
+        if cls:
+            if type(cls) is str:
+                cls = eval(cls)
+            result = self.__session.query(cls)
             for obj in result:
-                key = f'{obj.__class__.__name__}.{obj.id}'
+                key = f'{type(obj).__name__}.{obj.id}'
                 all_cls_dict[key] = obj
         else:
             classes = [State, City, User, Place, Review, Amenity]
             for clas in classes:
-                result = self.__session.query(clas).all()
+                result = self.__session.query(clas)
                 for obj in result:
-                    key = f'{obj.__class__.__name__}.{obj.id}'
+                    key = f'{type(obj).__name__}.{obj.id}'
                     all_cls_dict[key] = obj
 
         return all_cls_dict
@@ -75,4 +77,4 @@ class DBStorage:
 
     def close(self):
         """Remove session"""
-        self.__session.remove()
+        self.__session.close()

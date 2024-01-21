@@ -3,20 +3,19 @@
 from models.base_model import BaseModel, Base
 from sqlalchemy import Column, String, ForeignKey
 from sqlalchemy.orm import relationship
-from os import getenv
-
-storage_type = getenv("HBNB_TYPE_STORAGE")
+from sqlalchemy.ext.declarative import declarative_base
+from models.place import Place
 
 
 class City(BaseModel, Base):
-    """Class City """
+    """Class City
+    Attributes:
+        state_id: The state id
+        name: input name
+    """
 
     __tablename__ = "cities"
-    if storage_type = "db":
-        name = Column(String(128), nullable=False)
-        state_id = Column(String(60), ForeignKey("states.id"), nullable=False)
-        places = relationship('Place', cascade="all,delete", backref="cities")
-
-    else:
-        state_id = ""
-        name = ""
+    name = Column(String(128), nullable=False)
+    state_id = Column(String(60), ForeignKey("states.id"), nullable=False)
+    places = relationship('Place', cascade="all, delete, delete-orphan",
+            backref="cities")
