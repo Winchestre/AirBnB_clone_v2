@@ -124,7 +124,8 @@ class HBNBCommand(cmd.Cmd):
                 arg_split = arg.split("=")
                 arg_split[1] = eval(arg_split[1])
                 if type(arg_split[1]) is str:
-                    arg_split[1] = arg_split[1].replace("-", " ").replace('"', '\\"')
+                    arg_split[1] = arg_split[1].replace("-", " ")\
+                            .replace('"', '\\"')
                 kw[arg_split[0]] = arg_split[1]
         except SyntaxError:
             print("** class name missing **")
@@ -195,7 +196,7 @@ class HBNBCommand(cmd.Cmd):
         key = f'{c_name}.{c_id}'
 
         try:
-            del(storage.all()[key])
+            del storage.all()[key]
             storage.save()
         except KeyError:
             print("** no instance found **")
