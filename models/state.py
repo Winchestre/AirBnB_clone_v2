@@ -18,6 +18,14 @@ class State(BaseModel, Base):
     cities = relationship('City', cascade="all, delete, delete-orphan",
             backref="state")
 
+    def __str__(self):
+        """String representation of the State instance"""
+        return "[{}] ({}) {}".format(
+            self.__class__.__name__,
+            self.id,
+            {'id': self.id, 'created_at': self.created_at, 'updated_at': self.updated_at, 'name': self.name}
+        )
+
     @property
     def cities(self):
         """Getter for cities related to this State"""

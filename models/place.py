@@ -49,6 +49,7 @@ class Place(BaseModel, Base):
                 cascade="all, delete, delete-orphan", backref="place")
         amenities = relationship('Amenity', secondary=place_amenity,
                 viewonly=False, back_populates='place_amenities')
+ 
 
     else:
         @property
@@ -77,3 +78,17 @@ class Place(BaseModel, Base):
             """Add an Amenity.id to the attribute amenity_ids"""
             if type(obj) is Amenity and obj.id not in self.amenity_ids:
                 self.amenity_ids.append(obj.id)
+
+        def __str__(self):
+            """String representation of the Place instance"""
+            return "[{}] ({}) {}".format(
+                self.__class__.__name__,
+                self.id,
+                {
+                    'id': self.id, 'created_at': self.created_at, 'updated_at': self.updated_at,
+                    'number_bathrooms': self.number_bathrooms, 'longitude': self.longitude,
+                    'city_id': self.city_id, 'user_id': self.user_id, 'latitude': self.latitude,
+                    'price_by_night': self.price_by_night, 'name': self.name, 'max_guest': self.max_guest,
+                    'number_rooms': self.number_rooms
+                    }
+                )
