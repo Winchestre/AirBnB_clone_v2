@@ -136,8 +136,8 @@ class HBNBCommand(cmd.Cmd):
         print(new_instance.id)"""
 
 
-    def do_create(self, args):
-        """Create an object of any class with given parameters"""
+    """def do_create(self, args):
+        #Create an object of any class with given parameters
         try:
             if not args:
                 raise SyntaxError()
@@ -165,7 +165,46 @@ class HBNBCommand(cmd.Cmd):
 
         new_instance = HBNBCommand.classes[class_name](**kw)
         new_instance.save()
-        print(new_instance.id)
+        print(new_instance.id)"""
+
+    def do_create(self, args):
+        """Create an object of any class with given parameters"""
+        try:
+            if not args:
+                raise SyntaxError("No arguments provided")
+
+            args_list = args.split(" ")
+            class_name = args_list[0]
+
+            if class_name not in HBNBCommand.classes:
+                raise NameError(f"Class '{class_name}' not found")
+
+            params = args_list[1:]
+            kw = {}
+
+            for param in params:
+                param_split = param.split("=")
+                if len(param_split) != 2:
+                    continue
+
+                key, value = param_split
+                value = eval(value)
+
+                if isinstance(value, str):
+                    value = value.replace("-", " ").replace('"', '\\"')
+
+                kw[key] = value
+
+        except SyntaxError as e:
+            print(f"SyntaxError: {e}")
+            return
+        except NameError as e:
+            print(f"NameError: {e}")
+            return
+
+        new_instance = HBNBCommand.classes[class_name](**kw)
+        new_instance.save()
+        print(f"Created instance: {new_instance.id}")
 
 
     def help_create(self):
